@@ -2,9 +2,11 @@ package com.yangdiansheng.ipc;
 
 import android.app.Service;
 import android.content.Intent;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.os.Messenger;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
 import android.support.annotation.Nullable;
@@ -21,13 +23,38 @@ public class RemoteService extends Service {
 
     private boolean isConnected = false;
 
-    private Handler handler = new Handler(Looper.myLooper());
+    private Handler handler = new Handler(Looper.myLooper()) {
+        @Override
+        public void handleMessage(android.os.Message msg) {
+            super.handleMessage(msg);
+            Bundle bundle = msg.getData();
+            bundle.setClassLoader(Message.class.getClassLoader());
+            Message message = bundle.getParcelable("message");
+            Toast.makeText(RemoteService.this, message.getContent(), Toast.LENGTH_SHORT).show();
+
+            Messenger clinetMessenger = msg.replyTo;
+            Message reply = new Message();
+            reply.setContent("message reply form remote");
+            android.os.Message data = new android.os.Message();
+            Bundle bundle1 = new Bundle();
+            bundle1.putParcelable("data", reply);
+            data.setData(bundle1);
+            try {
+                clinetMessenger.send(data);
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+
+        }
+    };
 
     private RemoteCallbackList<IMessageReceiveListener> messageReceiveListenerRemoteCallbackList = new RemoteCallbackList<>();
 
     private ScheduledThreadPoolExecutor scheduledThreadPoolExecutor;
 
     private ScheduledFuture scheduledFuture;
+
+    private Messenger messenger = new Messenger(handler);
 
     private IConnectionService connectionService = new IConnectionService.Stub() {
         @Override
@@ -120,6 +147,9 @@ public class RemoteService extends Service {
             }
             if (IMessageService.class.getSimpleName().equals(serviceName)){
                 return iMessageService.asBinder();
+            }
+            if (Messenger.class.getSimpleName().equals(serviceName)){
+                return messenger.getBinder();
             }
             return null;
         }

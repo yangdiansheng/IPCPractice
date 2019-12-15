@@ -39,6 +39,11 @@ public class Message implements Parcelable {
         dest.writeByte(this.isSendSuccess ? (byte) 1 : (byte) 0);
     }
 
+    public void readFromParcel(Parcel dest){
+        content = dest.readString();
+        isSendSuccess = dest.readByte() == 1;
+    }
+
     @Override
     protected Object clone() throws CloneNotSupportedException {
         return super.clone();

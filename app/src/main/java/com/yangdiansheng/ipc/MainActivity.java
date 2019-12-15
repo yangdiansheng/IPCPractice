@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.os.Messenger;
 import android.os.RemoteException;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -31,6 +32,21 @@ public class MainActivity extends AppCompatActivity {
             });
         }
     };
+    private Messenger messengerProxy;
+    private Handler handler = new Handler(Looper.myLooper()){
+
+        @Override
+        public void handleMessage(android.os.Message msg) {
+            super.handleMessage(msg);
+            Bundle bundle = msg.getData();
+            bundle.setClassLoader(Message.class.getClassLoader());
+            Message message = bundle.getParcelable("data");
+            Toast.makeText(MainActivity.this, message.getContent(), Toast.LENGTH_SHORT).show();
+        }
+    };
+    private Messenger clientMessager = new Messenger(handler);
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,6 +117,23 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+        findViewById(R.id.bt_messeger).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try {
+                    Message message = new Message();
+                    message.setContent("send messgae form main by messeger");
+                    android.os.Message data = new android.os.Message();
+                    data.replyTo = clientMessager;
+                    Bundle bundle = new Bundle();
+                    bundle.putParcelable("message",message);
+                    data.setData(bundle);
+                    messengerProxy.send(data);
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
 
         Intent intent = new Intent(this,RemoteService.class);
         bindService(intent, new ServiceConnection() {
@@ -110,6 +143,7 @@ public class MainActivity extends AppCompatActivity {
                 try {
                     connectionServiceProxy = IConnectionService.Stub.asInterface(serviceManagerProxy.getService(IConnectionService.class.getSimpleName()));
                     messageServiceProxy = IMessageService.Stub.asInterface(serviceManagerProxy.getService(IMessageService.class.getSimpleName()));
+                    messengerProxy = new Messenger(serviceManagerProxy.getService(Messenger.class.getSimpleName()));
                 } catch (RemoteException e) {
                     e.printStackTrace();
                 }

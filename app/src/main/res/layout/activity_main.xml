@@ -50,6 +50,13 @@
             android:text="unregistermessage"/>
 
 
+        <Button
+            android:id="@+id/bt_messeger"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:text="messeger"/>
+
+
     </LinearLayout>
 
 </android.support.design.widget.CoordinatorLayout>
