@@ -31,6 +31,24 @@
             android:text="isConnected"/>
 
 
+        <Button
+            android:id="@+id/bt_send_message"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:text="sendMessage"/>
+
+        <Button
+            android:id="@+id/bt_register_message"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:text="registermessage"/>
+
+        <Button
+            android:id="@+id/bt_unregister_message"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:text="unregistermessage"/>
+
 
     </LinearLayout>
 

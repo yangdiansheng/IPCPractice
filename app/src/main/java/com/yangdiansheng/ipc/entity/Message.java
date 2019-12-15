@@ -8,11 +8,25 @@ public class Message implements Parcelable {
     private String content;
     private boolean isSendSuccess;
 
-    public Message(String content, boolean isSendSuccess) {
-        this.content = content;
-        this.isSendSuccess = isSendSuccess;
+    public Message(){
+
     }
 
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    public boolean isSendSuccess() {
+        return isSendSuccess;
+    }
+
+    public void setSendSuccess(boolean sendSuccess) {
+        isSendSuccess = sendSuccess;
+    }
 
     protected Message(Parcel in) {
         content = in.readString();
