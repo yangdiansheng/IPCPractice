@@ -5,13 +5,13 @@ import android.content.Intent;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.os.RemoteCallbackList;
 import android.os.RemoteException;
 import android.support.annotation.Nullable;
 import android.widget.Toast;
 
 import com.yangdiansheng.ipc.entity.Message;
 
-import java.util.ArrayList;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -23,7 +23,7 @@ public class RemoteService extends Service {
 
     private Handler handler = new Handler(Looper.myLooper());
 
-    private ArrayList<IMessageReceiveListener> messageReceiveListenerArrayList = new ArrayList<>();
+    private RemoteCallbackList<IMessageReceiveListener> messageReceiveListenerRemoteCallbackList = new RemoteCallbackList<>();
 
     private ScheduledThreadPoolExecutor scheduledThreadPoolExecutor;
 
@@ -44,15 +44,17 @@ public class RemoteService extends Service {
                 scheduledFuture = scheduledThreadPoolExecutor.scheduleAtFixedRate(new Runnable() {
                     @Override
                     public void run() {
-                        for (IMessageReceiveListener messageReceiveListener:messageReceiveListenerArrayList){
+                        int size =  messageReceiveListenerRemoteCallbackList.beginBroadcast();
+                        for (int i = 0;i< size; i++){
                             Message message = new Message();
                             message.setContent("this message from remote");
                             try {
-                                messageReceiveListener.onRecieveMessage(message);
+                                messageReceiveListenerRemoteCallbackList.getBroadcastItem(i).onRecieveMessage(message);
                             } catch (RemoteException e) {
                                 e.printStackTrace();
                             }
                         }
+                        messageReceiveListenerRemoteCallbackList.finishBroadcast();
                     }
                 }, 3000,3000, TimeUnit.MILLISECONDS);
             } catch (InterruptedException e) {
@@ -98,14 +100,14 @@ public class RemoteService extends Service {
         @Override
         public void registerMessageReceiveListener(IMessageReceiveListener messageReceiveListener) throws RemoteException {
             if (messageReceiveListener != null){
-                messageReceiveListenerArrayList.add(messageReceiveListener);
+                messageReceiveListenerRemoteCallbackList.register(messageReceiveListener);
             }
         }
 
         @Override
         public void unRegisterMessageReceiveListener(IMessageReceiveListener messageReceiveListener) throws RemoteException {
             if (messageReceiveListener != null){
-                messageReceiveListenerArrayList.remove(messageReceiveListener);
+                messageReceiveListenerRemoteCallbackList.unregister(messageReceiveListener);
             }
         }
     };
