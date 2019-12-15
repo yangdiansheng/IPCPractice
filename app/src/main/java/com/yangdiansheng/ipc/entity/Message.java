@@ -28,26 +28,31 @@ public class Message implements Parcelable {
         isSendSuccess = sendSuccess;
     }
 
-    protected Message(Parcel in) {
-        content = in.readString();
-        isSendSuccess = in.readByte() != 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(content);
-        dest.writeByte((byte) (isSendSuccess ? 1 : 0));
-    }
-
     @Override
     public int describeContents() {
         return 0;
     }
 
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(this.content);
+        dest.writeByte(this.isSendSuccess ? (byte) 1 : (byte) 0);
+    }
+
+    @Override
+    protected Object clone() throws CloneNotSupportedException {
+        return super.clone();
+    }
+
+    protected Message(Parcel in) {
+        this.content = in.readString();
+        this.isSendSuccess = in.readByte() != 0;
+    }
+
     public static final Creator<Message> CREATOR = new Creator<Message>() {
         @Override
-        public Message createFromParcel(Parcel in) {
-            return new Message(in);
+        public Message createFromParcel(Parcel source) {
+            return new Message(source);
         }
 
         @Override
